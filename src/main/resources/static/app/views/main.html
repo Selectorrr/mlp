@@ -1,0 +1,14 @@
+<div>
+  <h4>Brain</h4>
+  <input type="text" ng-model="asyncSelected"
+         uib-typeahead="address for address in getLocation($viewValue)"
+         typeahead-loading="loadingLocations"
+         typeahead-no-results="noResults" class="form-control"
+         typeahead-on-select="onSelect($item, $model, $label, $event)"
+  >
+  <i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+  <div ng-show="noResults">
+    <i class="glyphicon glyphicon-remove"></i> No Results Found
+  </div>
+  <br/>
+</div>
