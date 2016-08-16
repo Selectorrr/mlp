@@ -1,12 +1,13 @@
-package net.org.selector;
+package net.org.selector.mlp;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import net.org.selector.model.mlp.Neuron;
-import net.org.selector.model.mlp.Synapse;
-import net.org.selector.repository.mpl.NeuronRepository;
-import net.org.selector.repository.mpl.SynapseRepository;
-import net.org.selector.services.mlp.MlpService;
+import net.org.selector.MlpApplication;
+import net.org.selector.mlp.domain.Neuron;
+import net.org.selector.mlp.domain.Synapse;
+import net.org.selector.mlp.repository.NeuronRepository;
+import net.org.selector.mlp.repository.SynapseRepository;
+import net.org.selector.mlp.services.MlpService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,6 +1,6 @@
-package net.org.selector.repository.mpl;
+package net.org.selector.mlp.repository;
 
-import net.org.selector.model.mlp.Synapse;
+import net.org.selector.mlp.domain.Synapse;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.GraphRepository;
 

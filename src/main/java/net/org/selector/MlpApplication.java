@@ -1,6 +1,6 @@
 package net.org.selector;
 
-import net.org.selector.services.mlp.MlpService;
+import net.org.selector.mlp.services.MlpService;
 import org.neo4j.ogm.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @Configuration
-@EnableNeo4jRepositories(basePackages = "net.org.selector.repository.mpl")
+@EnableNeo4jRepositories(basePackages = "net.org.selector.mlp.repository")
 @EnableTransactionManagement
 public class MlpApplication extends Neo4jConfiguration {
     @Autowired
@@ -37,7 +37,7 @@ public class MlpApplication extends Neo4jConfiguration {
     @Override
     @Bean
     public SessionFactory getSessionFactory() {
-        return new SessionFactory(getConfiguration(), "net.org.selector.model.mlp");
+        return new SessionFactory(getConfiguration(), "net.org.selector.mlp.domain");
     }
 
 //    @Bean

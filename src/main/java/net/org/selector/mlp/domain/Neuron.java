@@ -1,4 +1,4 @@
-package net.org.selector.model.mlp;
+package net.org.selector.mlp.domain;
 
 import org.neo4j.ogm.annotation.NodeEntity;
 

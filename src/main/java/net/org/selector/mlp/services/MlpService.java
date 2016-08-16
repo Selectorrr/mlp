@@ -1,12 +1,12 @@
-package net.org.selector.services.mlp;
+package net.org.selector.mlp.services;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.*;
-import net.org.selector.model.mlp.Neuron;
-import net.org.selector.model.mlp.Synapse;
-import net.org.selector.repository.mpl.NeuronRepository;
-import net.org.selector.repository.mpl.SynapseRepository;
+import net.org.selector.mlp.domain.Neuron;
+import net.org.selector.mlp.domain.Synapse;
+import net.org.selector.mlp.repository.NeuronRepository;
+import net.org.selector.mlp.repository.SynapseRepository;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
