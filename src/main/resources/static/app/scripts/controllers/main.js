@@ -26,13 +26,12 @@ angular.module('staticApp')
         sensor: false
       }
     }).then(function (response) {
-      var result = response.data.results.map(function (item) {
+      outputs = response.data.results.map(function (item) {
         return item.formatted_address;
       });
-      outputs = result;
-      var sortedResult = $http.post('http://localhost:8080/sort', {
+      $http.post('http://localhost:8080/sort', {
         inputs: inputs,
-        outputs: result
+        outputs: outputs
       }).then(function(resp){
         deferred.resolve(resp.data);
       });
