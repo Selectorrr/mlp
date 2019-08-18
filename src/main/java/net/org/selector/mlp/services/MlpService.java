@@ -1,6 +1,5 @@
 package net.org.selector.mlp.services;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
@@ -88,8 +87,8 @@ public class MlpService {
 //        if (inputs.size() > 3) {
 //            return;
 //        }
-        ImmutableList<String> orderedInputs = Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(inputs);
-        String keyName = Joiner.on('_').join(orderedInputs);
+
+        String keyName = String.join("_", Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(inputs));
 
         String key = keyName + NodeType.HIDDEN;
         addHiddenNodes(inputs, outputs, key);
