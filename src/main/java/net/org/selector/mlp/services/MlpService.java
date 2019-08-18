@@ -30,12 +30,13 @@ public class MlpService {
             HiddenToOutLinks, 0D
     );
 
-    private MutableValueGraph<String, Double> brain = ValueGraphBuilder
+    private final MutableValueGraph<String, Double> brain = ValueGraphBuilder
             .undirected()
             .allowsSelfLoops(false)
             .build();
 
-    public synchronized void trainQuery(List<String> inputArgs, List<String> outputArgs, String selectedArg) {
+
+    public void trainQuery(List<String> inputArgs, List<String> outputArgs, String selectedArg) {
         if (inputArgs.isEmpty()) {
             return;
         }
@@ -46,24 +47,28 @@ public class MlpService {
 
         String selected = selectedArg + NodeType.OUTPUT;
 
-        generateHiddenNodes(inputs, outputs);
-        Context context = buildContext(inputs, outputs);
-        feedForward(context);
-        double[] targets = new double[outputs.size()];
-        Arrays.fill(targets, 0.0);
-        targets[outputs.indexOf(selected)] = 1.0;
-        backPropagate(context, targets);
-        updateLinksStrength(context);
+        synchronized (brain) {
+            generateHiddenNodes(inputs, outputs);
+            Context context = buildContext(inputs, outputs);
+            feedForward(context);
+            double[] targets = new double[outputs.size()];
+            Arrays.fill(targets, 0.0);
+            targets[outputs.indexOf(selected)] = 1.0;
+            backPropagate(context, targets);
+            updateLinksStrength(context);
+        }
     }
 
-    public synchronized double[] getRanksForOutputs(ImmutableList<String> inputArgs, ImmutableList<String> outputArgs) {
+    public double[] getRanksForOutputs(ImmutableList<String> inputArgs, ImmutableList<String> outputArgs) {
         List<String> inputs = toNode(inputArgs, NodeType.INPUT);
 
         List<String> outputs = toNode(outputArgs, NodeType.OUTPUT);
 
-        generateHiddenNodes(inputs, outputs);
-        Context context = buildContext(inputs, outputs);
-        return feedForward(context);
+        synchronized (brain) {
+            generateHiddenNodes(inputs, outputs);
+            Context context = buildContext(inputs, outputs);
+            return feedForward(context);
+        }
     }
 
     private List<String> toNode(List<String> inputArgs, NodeType type) {
@@ -87,6 +92,10 @@ public class MlpService {
         String keyName = Joiner.on('_').join(orderedInputs);
 
         String key = keyName + NodeType.HIDDEN;
+        addHiddenNodes(inputs, outputs, key);
+    }
+
+    private void addHiddenNodes(List<String> inputs, List<String> outputs, String key) {
         if (brain.addNode(key)) {
             for (String input : inputs) {
                 brain.putEdgeValue(input, key, 1.0 / inputs.size());
