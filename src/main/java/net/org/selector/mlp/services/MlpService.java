@@ -9,8 +9,7 @@ import com.google.common.collect.Sets;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import net.org.selector.mlp.domain.Context;
-import net.org.selector.mlp.domain.Node;
-import net.org.selector.mlp.domain.Node.NodeType;
+import net.org.selector.mlp.domain.NodeType;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -18,8 +17,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-//import org.springframework.stereotype.Service;
 
 /**
  * Created by Selector on 20.07.2016.
@@ -35,7 +32,7 @@ public class MlpService {
             HiddenToOutLinks, 0D
     );
 
-    private MutableValueGraph<Node, Double> brain = ValueGraphBuilder
+    private MutableValueGraph<String, Double> brain = ValueGraphBuilder
             .directed()
             .allowsSelfLoops(false)
             .build();
@@ -45,11 +42,11 @@ public class MlpService {
             return;
         }
 
-        List<Node> inputs = toNode(inputArgs, NodeType.INPUT);
+        List<String> inputs = toNode(inputArgs, NodeType.INPUT);
 
-        List<Node> outputs = toNode(outputArgs, NodeType.OUTPUT);
+        List<String> outputs = toNode(outputArgs, NodeType.OUTPUT);
 
-        Node selected = new Node(selectedArg, NodeType.OUTPUT);
+        String selected = selectedArg + NodeType.OUTPUT;
 
         generateHiddenNodes(inputs, outputs);
         Context context = buildContext(inputs, outputs);
@@ -62,66 +59,69 @@ public class MlpService {
     }
 
     public synchronized double[] getRanksForOutputs(ImmutableList<String> inputArgs, ImmutableList<String> outputArgs) {
-        List<Node> inputs = toNode(inputArgs, NodeType.INPUT);
+        List<String> inputs = toNode(inputArgs, NodeType.INPUT);
 
-        List<Node> outputs = toNode(outputArgs, NodeType.OUTPUT);
+        List<String> outputs = toNode(outputArgs, NodeType.OUTPUT);
 
         generateHiddenNodes(inputs, outputs);
         Context context = buildContext(inputs, outputs);
         return feedForward(context);
     }
 
-    private List<Node> toNode(List<String> inputArgs, NodeType type) {
+    private List<String> toNode(List<String> inputArgs, NodeType type) {
         return inputArgs
                 .stream()
-                .map(i -> new Node(i, type))
+                .parallel()
+                .map(i -> i + type)
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    private double getLinkStrength(Node from, Node to, String linksType) {
+    private double getLinkStrength(String from, String to, String linksType) {
         return Objects.requireNonNull(brain.edgeValueOrDefault(from, to, linksDefaults.get(linksType)));
     }
 
-    private void generateHiddenNodes(List<Node> inputs, List<Node> outputs) {
+    private void generateHiddenNodes(List<String> inputs, List<String> outputs) {
 //        if (inputs.size() > 3) {
 //            return;
 //        }
-        ImmutableList<String> orderedInputs = Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(inputs.stream().map(Node::getValue).collect(Collectors.toList()));
+        ImmutableList<String> orderedInputs = Ordering.from(String.CASE_INSENSITIVE_ORDER).immutableSortedCopy(inputs);
         String keyName = Joiner.on('_').join(orderedInputs);
 
-        Node key = new Node(keyName, NodeType.HIDDEN);
+        String key = keyName + NodeType.HIDDEN;
         if (brain.addNode(key)) {
-            for (Node input : inputs) {
+            for (String input : inputs) {
                 brain.putEdgeValue(input, key, 1.0 / inputs.size());
             }
-            for (Node output : outputs) {
+            for (String output : outputs) {
                 brain.putEdgeValue(key, output, 0.1);
             }
         }
     }
 
-    private List<Node> getHiddenNodes(List<Node> inputs, List<Node> outputs) {
+    private List<String> getHiddenNodes(List<String> inputs, List<String> outputs) {
 
-        Set<Node> inNodes = inputs
+        Set<String> inNodes = inputs
                 .stream()
+                .parallel()
                 .flatMap(i -> brain.adjacentNodes(i).stream())
                 .collect(Collectors.toSet());
 
-        Set<Node> outNodes = outputs
+        Set<String> outNodes = outputs
                 .stream()
+                .parallel()
                 .flatMap(i -> brain.adjacentNodes(i).stream())
                 .collect(Collectors.toSet());
 
         return Lists.newArrayList(Sets.intersection(inNodes, outNodes).iterator());
     }
 
-    private double[][] getWeights(List<Node> from, List<Node> to, String linksType) {
+    private double[][] getWeights(List<String> from, List<String> to, String linksType) {
         double[][] weights = new double[from.size()][to.size()];
         int i = 0;
-        for (Node fromItem : from) {
+        for (String fromItem : from) {
             int j = 0;
-            for (Node toItem : to) {
+            for (String toItem : to) {
                 weights[i][j] = getLinkStrength(fromItem, toItem, linksType);
                 j++;
             }
@@ -149,8 +149,8 @@ public class MlpService {
         return context.ao;
     }
 
-    private Context buildContext(List<Node> inputs, List<Node> outputs) {
-        List<Node> hiddenNodes = getHiddenNodes(inputs, outputs);
+    private Context buildContext(List<String> inputs, List<String> outputs) {
+        List<String> hiddenNodes = getHiddenNodes(inputs, outputs);
         double[][] wi = getWeights(inputs, hiddenNodes, InToHiddenLinks);
         double[][] wo = getWeights(hiddenNodes, outputs, HiddenToOutLinks);
         return new Context(inputs, outputs, hiddenNodes, wi, wo);
