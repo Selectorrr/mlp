@@ -1,14 +1,9 @@
 package net.org.selector.mlp;
 
-import com.google.common.collect.ImmutableList;
-import net.org.selector.mlp.domain.Context;
 import net.org.selector.mlp.services.MlpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import javax.annotation.PostConstruct;
-import java.util.Arrays;
 
 @SpringBootApplication
 public class MlpApplication {
@@ -19,19 +14,23 @@ public class MlpApplication {
         SpringApplication.run(MlpApplication.class, args);
     }
 
-    @PostConstruct
-    public void postConstruct() {
-        ImmutableList<String> inputs = ImmutableList.of("wWorld", "wBank");
-        ImmutableList<String> outputs = ImmutableList.of("uWorldBank", "uRiver", "uEarth");
-
-        double[] result = mlpService.getRanksForOutputs(inputs, outputs);
-        System.out.println(Arrays.toString(result));
-
-        String selected = "uWorldBank";
-        mlpService.trainQuery(inputs, outputs, selected);
-        double[] result2 = mlpService.getRanksForOutputs(inputs, outputs);
-        System.out.println(Arrays.toString(result2));
-    }
+//    @PostConstruct
+//    public void postConstruct() {
+//        ImmutableList<String> inputs = ImmutableList.of("1", "2"); //поставленные лайки
+//        ImmutableList<String> outputs = ImmutableList.of("3", "4", "5"); //нужно лайкнуть
+//
+//        double[] result = mlpService.getRanksForOutputs(inputs, outputs);
+//        System.out.println(Arrays.toString(result));
+//
+//        String selected = "4"; //лайкнул
+//        mlpService.trainQuery(inputs, outputs, selected);
+//        double[] result2 = mlpService.getRanksForOutputs(inputs, ImmutableList.of("3", "4"));
+//        System.out.println(Arrays.toString(result2));
+//
+//        double[] result3 = mlpService.getRanksForOutputs(ImmutableList.of("2"), ImmutableList.of("1", "4"));
+//        System.out.println(Arrays.toString(result3));
+//
+//    }
 
 
 

@@ -8,16 +8,18 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Context {
-    public List<String> inputs;
-    public List<String> outputs;
-    public List<String> hiddenNodes;
+    public List<Node> inputs;
+    public List<Node> outputs;
+    public List<Node> hiddenNodes;
     public double[] ai;
     public double[] ah;
     public double[] ao;
     public double[][] wi;
     public double[][] wo;
 
-    public Context(List<String> inputs, List<String> outputs, List<String> hiddenNodes, double[][] wi, double[][] wo) {
+    public Context(List<Node> inputs,
+                   List<Node> outputs,
+                   List<Node> hiddenNodes, double[][] wi, double[][] wo) {
         this.inputs = inputs;
         this.outputs = outputs;
         this.hiddenNodes = hiddenNodes;
