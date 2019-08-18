@@ -3,9 +3,7 @@ package net.org.selector.mlp.services;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import net.org.selector.mlp.domain.Context;
@@ -33,7 +31,7 @@ public class MlpService {
     );
 
     private MutableValueGraph<String, Double> brain = ValueGraphBuilder
-            .directed()
+            .undirected()
             .allowsSelfLoops(false)
             .build();
 
@@ -107,13 +105,13 @@ public class MlpService {
                 .flatMap(i -> brain.adjacentNodes(i).stream())
                 .collect(Collectors.toSet());
 
-        Set<String> outNodes = outputs
+        return outputs
                 .stream()
                 .parallel()
                 .flatMap(i -> brain.adjacentNodes(i).stream())
-                .collect(Collectors.toSet());
-
-        return Lists.newArrayList(Sets.intersection(inNodes, outNodes).iterator());
+                .filter(inNodes::contains)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private double[][] getWeights(List<String> from, List<String> to, String linksType) {
