@@ -1,7 +1,9 @@
 package net.org.selector.mlp.services;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 import lombok.extern.slf4j.Slf4j;
 import net.org.selector.mlp.MlpApplication;
 import org.junit.Before;
@@ -11,9 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by Stepan Litvinov on 2019-08-18.
@@ -23,11 +23,13 @@ import java.util.Random;
 @Slf4j
 public class MlpServiceTest {
 
-    private final int MAX_USERS = 300;
-    private final int MAX_LIKES = 30;
+    private final int MAX_USERS = 150;
+    private final int MAX_LIKES = 15;
     @Autowired
     private MlpService mlpService;
     private ImmutableList<String> users;
+    private Multimap<String, String> likesPerUser;
+    private Map<String, Multimap<String, String>> userLikePrev;
 
     @Before
     public void setUp() {
@@ -36,32 +38,64 @@ public class MlpServiceTest {
             builder.add(String.valueOf(i));
         }
         users = builder.build();
+
+
+        likesPerUser = HashMultimap.create();
+
+        users.forEach(curUser -> {
+            List<String> otherUsers = new ArrayList<>(users);
+            otherUsers.remove(curUser);
+            while (likesPerUser.get(curUser).size() < MAX_LIKES) {
+                int random = new Random().nextInt(otherUsers.size());
+                String randomUser = otherUsers.get(random);
+                likesPerUser.put(curUser, randomUser);
+            }
+        });
+
+
+        userLikePrev = new HashMap<>();
+
+        likesPerUser.keySet().forEach(user -> {
+            Collection<String> likes = likesPerUser.get(user);
+
+            List<String> otherUsers = new ArrayList<>(users);
+            otherUsers.remove(user);
+
+            Multimap<String, String> behave = HashMultimap.create();
+
+            List<String> buffer = new ArrayList<>();
+            otherUsers.forEach(otherUser -> {
+                buffer.add(otherUser);
+                if (likes.contains(otherUser)) {
+                    behave.putAll(otherUser, buffer);
+                    buffer.clear();
+                }
+            });
+            userLikePrev.put(user, behave);
+        });
     }
 
     @Test
-    public void test() {
+    public void work() {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        users.forEach(curUser -> {
-            List<String> likes = new ArrayList<>();
-            List<String> otherUsers = new ArrayList<>(users);
-            otherUsers.remove(curUser);
+        userLikePrev.keySet()
+                .stream()
+                .parallel()
+                .forEach(curUser -> {
+                    Multimap<String, String> likePrev = userLikePrev.get(curUser);
 
-            for (int i = 0; i < MAX_LIKES + 1; i++) {
+                    List<String> likes = new ArrayList<>();
 
-                int random = new Random().nextInt(otherUsers.size());
-                String randomUser = otherUsers.get(random);
+                    likePrev.keySet().forEach(like -> {
+                        Collection<String> shown = likePrev.get(like);
+                        likes.add(like);
+                        mlpService.trainQuery(likes, new ArrayList<>(shown), like);
 
-//                log.info("user: {} like another user: {}", curUser, randomUser);
-                mlpService.trainQuery(likes, otherUsers, randomUser);
-                otherUsers.remove(random);
-                likes.add(curUser);
 
-            }
-        });
-//        long millis = stopwatch.elapsed(MILLISECONDS);
+                    });
+                });
 
         log.info("time: " + stopwatch);
-
     }
 
 

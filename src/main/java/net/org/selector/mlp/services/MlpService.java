@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
+import lombok.extern.slf4j.Slf4j;
 import net.org.selector.mlp.domain.Context;
 import net.org.selector.mlp.domain.NodeType;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * Created by Selector on 20.07.2016.
  */
 @Service
+@Slf4j
 public class MlpService {
 
     private static final String InToHiddenLinks = "inToHidden";
@@ -109,13 +111,13 @@ public class MlpService {
 
         Set<String> inNodes = inputs
                 .stream()
-                .parallel()
+//                .parallel()
                 .flatMap(i -> brain.adjacentNodes(i).stream())
                 .collect(Collectors.toSet());
 
         return outputs
                 .stream()
-                .parallel()
+//                .parallel()
                 .flatMap(i -> brain.adjacentNodes(i).stream())
                 .filter(inNodes::contains)
                 .distinct()
